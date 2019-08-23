@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<messages namespace="Pet" explain="pet model">
+	<!-- bean define. this is a pet game example configure -->
+	<struct name="PetProperty" cache="true" explain="property">
+		<field class="int" name="pid" explain="property id"/>
+		<field class="int" name="pvalue" explain="property"/>
+	</struct>
+
+	<!-- data struct class -->
+	<struct name="PetChip" cache="true" explain="pet chip">
+		<field class="int" name="pid" explain="pet id"/>
+		<field class="int" name="chipNum" explain="chip number"/>
+	</struct>
+
+	<!-- data struct class -->
+	<struct name="KFightPet" cache="true" explain="pet chip">
+		<field class="int" name="pid" explain="pet id"/>
+		<field class="int" name="fightIdx" explain="fight idx"/>
+	</struct>
+
+	<struct name="Pet" cache="true" explain="pet entity">
+		<field class="int" name="modelId" explain="template id" />
+		<field class="string" name="instanceId" explain="pet instance id"/>
+		<field class="int" name="petLv" explain="pet level" />
+		<field class="int" name="petState" explain="pet status" />
+		<field class="string" name="petExp" explain="pet experience" />
+		<field class="int" name="petQuality" explain="pet quality" />
+		<field class="int" name="intimacyLv" explain="intimacy level" />
+		<list class="PetProperty" name="personValue" explain="pet personal property list" />
+		<list class="PetProperty" name="effortValue" explain="pet effort property list" />
+		<list  class="int" name="activeSkills" explain="act skill array"/>
+		<list  class="PetProperty" name="propertys" explain="pet property list"/>
+	</struct>
+
+	<!-- message tag: generate message code. deliver binary data between client and server -->
+	<message msgId="100001" name="ResAllPetCollect" cache="true" explain="return pet collect data">
+	    <list class="KFightPet" name="fightPets" explain="fight instance"/>
+		<field class="int" name="zPowerLv" explain="power level" />
+		<list class="PetProperty" name="PetCollect" explain="pet collect"/>
+		<list class="PetChip" name="PetChip" explain="pet chip"/>
+		<field class="string" name="totalExp" explain="total experience" />
+	</message>
+
+	<message msgId="100002" name="ReqWithSomeProperty" cache="true" explain="some explain">
+	    <field class="string" name="petId" explain="pet instance id"/>
+		<list class="int" name="propertyIds" explain="pet property ids: array"/>
+	</message>
+
+	<message msgId="100003" name="ReqNoReturn" cache="true" explain="this message is empty data to send">
+	</message>
+</messages>

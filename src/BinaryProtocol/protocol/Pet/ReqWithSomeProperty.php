@@ -1,0 +1,77 @@
+<?php
+/**
+ * Created by PHPStorm
+ * User: ccl
+ * Date: 2019/08/23
+ * Time: 19:52
+ */
+namespace BinaryProtocol\Protocol\Pet;
+use BinaryStream\BinaryReader;
+use BinaryStream\BinaryWriter;
+use BinaryProtocol\BaseMessage;
+/**
+ * function some explain
+ */
+class ReqWithSomeProperty extends BaseMessage
+{
+    /**
+     * pet instance id
+     * @var string $petId
+     */
+    public $petId;
+    /** 
+     * pet property ids: array
+     * @var array $propertyIds 
+     */
+    public $propertyIds;
+    public function __construct()
+    {
+        parent::__construct();
+        $this->petId = '';
+        $this->propertyIds = [];
+    }
+    /**
+     * return message ID
+     * @return int
+     */
+    function getMsgID(){
+        return 100002;
+    }
+    /**
+     * return message ID
+     * @return int
+     */
+    function msgID(){
+        return 100002;
+    }
+    /**
+     * write buffer data
+     * @throws
+     * @param BinaryWriter $buffer
+     * @return string
+     */
+    public function write(BinaryWriter $buffer)
+    {
+        // TODO: Implement write() method.
+        $buffer->writeUTFString($this->petId);
+        $buffer->writeShort(count($this->propertyIds));
+        for($i = 0; $i < count($this->propertyIds); $i++){
+            $buffer->writeInt32($this->propertyIds[$i]);
+        }
+        return $buffer->getWriteStream();
+    }
+    /**
+     * read buffer data
+     * @param BinaryReader $buffer
+     */
+    public function read(BinaryReader $buffer)
+    {
+        // TODO: Implement read() method.
+        $this->petId = $buffer->readUTFString();
+        $propertyIds_len = $buffer->readShort();
+        for($i = 0; $i < $propertyIds_len; $i++){
+            $value = $buffer->readInt32();
+            $this->propertyIds[$i] = $value;
+        }
+    }
+}
