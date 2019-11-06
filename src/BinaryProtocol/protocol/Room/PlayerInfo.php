@@ -5,30 +5,36 @@
  * Date: 2019/11/06
  * Time: 18:03
  */
-namespace BinaryProtocol\Protocol\Pet;
+namespace BinaryProtocol\Protocol\Room;
 use BinaryStream\BinaryReader;
 use BinaryStream\BinaryWriter;
 use BinaryProtocol\BaseStruct;
 /**
- * function pet chip
+ * function 玩家信息结构体
  */
-class KFightPet extends BaseStruct
+class PlayerInfo extends BaseStruct
 {
     /**
-     * pet id
-     * @var int $pid
+     * 玩家ID
+     * @var string $PlayerID
      */
-    public $pid;
+    public $PlayerID;
     /**
-     * fight idx
-     * @var int $fightIdx
+     * 玩家坐标X
+     * @var int $x
      */
-    public $fightIdx;
+    public $x;
+    /**
+     * 玩家坐标Y
+     * @var int $y
+     */
+    public $y;
     public function __construct()
     {
         parent::__construct();
-        $this->pid = 0;
-        $this->fightIdx = 0;
+        $this->PlayerID = '';
+        $this->x = 0;
+        $this->y = 0;
     }
     /**
      * write buffer data
@@ -39,8 +45,9 @@ class KFightPet extends BaseStruct
     public function write(BinaryWriter $buffer)
     {
         // TODO: Implement write() method.
-        $buffer->writeInt32($this->pid);
-        $buffer->writeInt32($this->fightIdx);
+        $buffer->writeUTFString($this->PlayerID);
+        $buffer->writeInt32($this->x);
+        $buffer->writeInt32($this->y);
         return $buffer->getWriteStream();
     }
     /**
@@ -50,7 +57,8 @@ class KFightPet extends BaseStruct
     public function read(BinaryReader $buffer)
     {
         // TODO: Implement read() method.
-        $this->pid = $buffer->readInt32();
-        $this->fightIdx = $buffer->readInt32();
+        $this->PlayerID = $buffer->readUTFString();
+        $this->x = $buffer->readInt32();
+        $this->y = $buffer->readInt32();
     }
 }

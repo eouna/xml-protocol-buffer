@@ -5,33 +5,39 @@
  * Date: 2019/11/06
  * Time: 18:03
  */
-namespace BinaryProtocol\Protocol\Pet;
+namespace BinaryProtocol\Protocol\Room;
 use BinaryStream\BinaryReader;
 use BinaryStream\BinaryWriter;
 use BinaryProtocol\BaseMessage;
 /**
- * function this message is empty data to send
+ * function 同步其他玩家
  */
-class ReqNoReturn extends BaseMessage
+class SynchroOtherPlayer extends BaseMessage
 {
-    const MSG_ID = 100003;
+    const MSG_ID = 10002;
+    /** 
+     * 玩家信息
+     * @var array $OtherPlayer 
+     */
+    public $OtherPlayer;
     public function __construct()
     {
         parent::__construct();
+        $this->OtherPlayer = [];
     }
     /**
      * return message ID
      * @return int
      */
     public static function getMsgID(){
-        return 100003;
+        return 10002;
     }
     /**
      * return message ID
      * @return int
      */
     public static function msgID(){
-        return 100003;
+        return 10002;
     }
     /**
      * write buffer data
@@ -42,6 +48,10 @@ class ReqNoReturn extends BaseMessage
     public function write(BinaryWriter $buffer)
     {
         // TODO: Implement write() method.
+        $buffer->writeShort(count($this->OtherPlayer));
+        for($i = 0; $i < count($this->OtherPlayer); $i++){
+            $this->OtherPlayer[$i]->write($buffer);
+        }
         return $buffer->getWriteStream();
     }
     /**
@@ -51,5 +61,11 @@ class ReqNoReturn extends BaseMessage
     public function read(BinaryReader $buffer)
     {
         // TODO: Implement read() method.
+        $OtherPlayer_len = $buffer->readShort();
+        for($i = 0; $i < $OtherPlayer_len; $i++){
+            $value = new PlayerInfo();
+            $value->read($buffer);
+            $this->OtherPlayer[$i] = $value;
+        }
     }
 }

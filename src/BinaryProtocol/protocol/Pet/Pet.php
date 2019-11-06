@@ -2,17 +2,17 @@
 /**
  * Created by PHPStorm
  * User: ccl
- * Date: 2019/08/23
- * Time: 19:52
+ * Date: 2019/11/06
+ * Time: 18:03
  */
 namespace BinaryProtocol\Protocol\Pet;
 use BinaryStream\BinaryReader;
 use BinaryStream\BinaryWriter;
-use BinaryProtocol\BaseMessage;
+use BinaryProtocol\BaseStruct;
 /**
  * function pet entity
  */
-class Pet extends BaseMessage
+class Pet extends BaseStruct
 {
     /**
      * template id

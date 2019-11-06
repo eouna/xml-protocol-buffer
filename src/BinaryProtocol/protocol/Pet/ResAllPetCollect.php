@@ -2,8 +2,8 @@
 /**
  * Created by PHPStorm
  * User: ccl
- * Date: 2019/08/23
- * Time: 19:52
+ * Date: 2019/11/06
+ * Time: 18:03
  */
 namespace BinaryProtocol\Protocol\Pet;
 use BinaryStream\BinaryReader;
@@ -14,6 +14,7 @@ use BinaryProtocol\BaseMessage;
  */
 class ResAllPetCollect extends BaseMessage
 {
+    const MSG_ID = 100001;
     /**
      * power level
      * @var int $zPowerLv
@@ -52,14 +53,14 @@ class ResAllPetCollect extends BaseMessage
      * return message ID
      * @return int
      */
-    function getMsgID(){
+    public static function getMsgID(){
         return 100001;
     }
     /**
      * return message ID
      * @return int
      */
-    function msgID(){
+    public static function msgID(){
         return 100001;
     }
     /**

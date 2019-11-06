@@ -11,17 +11,11 @@ namespace BinaryProtocol;
 use BinaryStream\BinaryReader;
 use BinaryStream\BinaryWriter;
 
-abstract class BaseMessage
+abstract class BaseStruct
 {
     public function __construct()
     {
     }
-    
-    /**
-     * get message id
-     * @return int
-     */
-    abstract public static function getMsgId();
     
     /**
      * write buffer data

@@ -5,33 +5,39 @@
  * Date: 2019/11/06
  * Time: 18:03
  */
-namespace BinaryProtocol\Protocol\Pet;
+namespace BinaryProtocol\Protocol\Room;
 use BinaryStream\BinaryReader;
 use BinaryStream\BinaryWriter;
 use BinaryProtocol\BaseMessage;
 /**
- * function this message is empty data to send
+ * function 同步玩家离开房间
  */
-class ReqNoReturn extends BaseMessage
+class SynchroPlayerLeave extends BaseMessage
 {
-    const MSG_ID = 100003;
+    const MSG_ID = 10003;
+    /**
+     * 玩家离开
+     * @var string $PlayerID
+     */
+    public $PlayerID;
     public function __construct()
     {
         parent::__construct();
+        $this->PlayerID = '';
     }
     /**
      * return message ID
      * @return int
      */
     public static function getMsgID(){
-        return 100003;
+        return 10003;
     }
     /**
      * return message ID
      * @return int
      */
     public static function msgID(){
-        return 100003;
+        return 10003;
     }
     /**
      * write buffer data
@@ -42,6 +48,7 @@ class ReqNoReturn extends BaseMessage
     public function write(BinaryWriter $buffer)
     {
         // TODO: Implement write() method.
+        $buffer->writeUTFString($this->PlayerID);
         return $buffer->getWriteStream();
     }
     /**
@@ -51,5 +58,6 @@ class ReqNoReturn extends BaseMessage
     public function read(BinaryReader $buffer)
     {
         // TODO: Implement read() method.
+        $this->PlayerID = $buffer->readUTFString();
     }
 }

@@ -6,7 +6,7 @@
  * Time: 17:50
  */
 
-class protocolGenerator
+class ProtocolGenerator
 {
 
     const STRUCT = 1;
@@ -22,6 +22,16 @@ class protocolGenerator
     private $_template_string;
 
     /**
+     * msg factory template string
+     * */
+    private $_msg_factory_template_string;
+
+    /**
+     * msg class instance map
+     * */
+    private $msg_instance_map = [];
+
+    /**
      * self define options
      * @param  array $options
      * */
@@ -29,9 +39,11 @@ class protocolGenerator
     {
 
         $this->_template_string = include __DIR__ . "/template/template.php";
+        $this->_msg_factory_template_string = include __DIR__ . "/template/MsgFactoryTemplate.php";
         $this->_config = include __DIR__ . "/../../config.php";
 
         $this->baseMessageGenerator();
+        $this->baseStructGenerator();
         $this->autoLoadGenerator();
 
         foreach ($options as $key => $value)
@@ -63,10 +75,10 @@ class protocolGenerator
      * @return int
      */
 ';
-        return  $description .( $flag ? '    function getMsgID(){
+        return  $description .( $flag ? '    public static function getMsgID(){
         return ' . $msg_id. ';
     }
-' : '    function msgID(){
+' : '    public static function msgID(){
         return ' . $msg_id . ';
     }
 ');
@@ -164,7 +176,13 @@ abstract class BaseMessage
     public function __construct()
     {
     }
-
+    
+    /**
+     * get message id
+     * @return int
+     */
+    abstract public static function getMsgId();
+    
     /**
      * write buffer data
      * @param BinaryWriter $buffer
@@ -190,6 +208,51 @@ abstract class BaseMessage
 }
 ';
         return file_put_contents($this->getFilePath('base_message_location'), $config_loader);
+    }
+
+    /**
+     * generate base struct class
+     * */
+    public function baseStructGenerator(){
+        $config_loader = '<?php
+'. $this->getCodeDescription() .'
+
+namespace BinaryProtocol;
+
+use BinaryStream\BinaryReader;
+use BinaryStream\BinaryWriter;
+
+abstract class BaseStruct
+{
+    public function __construct()
+    {
+    }
+    
+    /**
+     * write buffer data
+     * @param BinaryWriter $buffer
+     * @return string
+     */
+    abstract public function write(BinaryWriter $buffer);
+
+    /**
+     * read buffer data
+     * @param BinaryReader $buffer
+     */
+    abstract public function read(BinaryReader $buffer);
+    
+    /**
+     * try to access none attribute throw configure table exception 
+     * @param mixed $name
+     * */
+    public function __isset(string $name)
+    {
+        // TODO: Implement __isset() method.
+        throw new \RuntimeException("·This Attribute：{$name} Not Found In Configure·");
+    }
+}
+';
+        return file_put_contents($this->getFilePath('base_struct_location'), $config_loader);
     }
 
     /**
@@ -455,14 +518,6 @@ abstract class BaseMessage
             $code_template = str_replace($this->_config['template_anchor']['class_function'], $protocol_data['class_function'], $code_template);
             $code_template = str_replace($this->_config['template_anchor']['class_name'], $protocol_data['class_name'], $code_template);
 
-            if($type == self::MESSAGE){
-                $code_template = str_replace($this->_config['template_anchor']['getMsgId'], $this->getMsgCodeBlock($protocol_data['msg_id']), $code_template);
-                $code_template = str_replace($this->_config['template_anchor']['MsgId'], $this->getMsgCodeBlock($protocol_data['msg_id'], false), $code_template);
-            } else{
-                $code_template = str_replace($this->_config['template_anchor']['getMsgId'], '', $code_template);
-                $code_template = str_replace($this->_config['template_anchor']['MsgId'], '', $code_template);
-            }
-
             $list_attribute_string = $construct = $write_string = $read_string = '';
             if(!empty($protocol_data['list']))
                 foreach ($protocol_data['list'] as $list_data){
@@ -476,6 +531,22 @@ abstract class BaseMessage
             $construct_string = ($protocol_data['field']['construct_string'] ?? "") . $construct;
             $write_string = ($protocol_data['field']['write_string'] ?? "") . $write_string . "        return \$buffer->getWriteStream();
 ";
+            $construct_string = "        parent::__construct();\n" . $construct_string;
+
+            if($type == self::MESSAGE){
+                $code_template = str_replace($this->_config['template_anchor']['getMsgId'], $this->getMsgCodeBlock($protocol_data['msg_id']), $code_template);
+                $code_template = str_replace($this->_config['template_anchor']['MsgId'], $this->getMsgCodeBlock($protocol_data['msg_id'], false), $code_template);
+                $code_template = str_replace($this->_config['template_anchor']['base_message'], 'extends BaseMessage', $code_template);
+                $code_template = str_replace($this->_config['template_anchor']['extender'], 'BaseMessage', $code_template);
+                $attribute_string = "    const MSG_ID = {$protocol_data['msg_id']};\n" . $attribute_string;
+                $this->msg_instance_map[$protocol_data['msg_id']] = [$protocol_data['class_function'], $protocol_data['class_name']];
+            } else{
+                $code_template = str_replace($this->_config['template_anchor']['getMsgId'], '', $code_template);
+                $code_template = str_replace($this->_config['template_anchor']['base_message'], 'extends BaseStruct', $code_template);
+                $code_template = str_replace($this->_config['template_anchor']['extender'], 'BaseStruct', $code_template);
+                $code_template = str_replace($this->_config['template_anchor']['MsgId'], '', $code_template);
+            }
+
             $code_template = str_replace($this->_config['template_anchor']['attribute'], $attribute_string, $code_template);
             $code_template = str_replace($this->_config['template_anchor']['construct_init'], $construct_string, $code_template);
             $code_template = str_replace($this->_config['template_anchor']['write_block'], $write_string, $code_template);
@@ -488,5 +559,32 @@ abstract class BaseMessage
             $code_template = preg_replace('/\n[\s| ]*\r/', '', $code_template);
             file_put_contents($place_string . "/{$protocol_data['class_name']}.php", $code_template);
         }
+
+        //self::msgIdFactoryGenerator($this->_config['namespace']);
+    }
+
+    /**
+     * message id reflect class
+     * @param string $namespace
+     * @return string|null
+     * */
+    private function msgIdFactoryGenerator(string $namespace){
+        if(empty($this->msg_instance_map)) return null;
+
+        $code_template = $this->_msg_factory_template_string;
+        $const_string = $class_map_string =  $message_map = '';
+        foreach ($this->msg_instance_map as $msg_id => $class_info){
+            $const_string .= "    const _{$msg_id} = \"{$class_info[0]}\";\n";
+            $class_map_string .= "        self::_{$msg_id} => Pet\\{$class_info[1]}::class,\n";
+            $message_map .= "        {$msg_id} => Pet\\{$class_info[1]}::class,     //{$class_info[0]}\n";
+        }
+
+        $code_template = str_replace($this->_config['template_anchor']['const_defines'], $const_string, $code_template);
+        $code_template = str_replace($this->_config['template_anchor']['namespace'], $namespace, $code_template);
+        $code_template = str_replace($this->_config['template_anchor']['class_map'], $class_map_string, $code_template);
+        $code_template = str_replace($this->_config['template_anchor']['message_map'], $message_map, $code_template);
+
+        $code_template = preg_replace('/\n[\s| ]*\r/', '', $code_template);
+        return file_put_contents($this->getFilePath('msg_factory_message_location'), $code_template);
     }
 }

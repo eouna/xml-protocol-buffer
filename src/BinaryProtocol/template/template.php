@@ -7,19 +7,18 @@ namespace BinaryProtocol\Protocol\{:name_space};
 
 use BinaryStream\BinaryReader;
 use BinaryStream\BinaryWriter;
-use BinaryProtocol\BaseMessage;
+use BinaryProtocol\{:extender};
 
 /**
  * function {:class_function}
  */
-class {:class_name} extends BaseMessage
+class {:class_name} {:base_message}
 {
     
 {:attribute}
     
     public function __construct()
     {
-        parent::__construct();
 {:construct_init}
     }
     

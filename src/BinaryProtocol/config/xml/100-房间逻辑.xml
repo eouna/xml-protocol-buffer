@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<messages namespace="Room" explain="房间模块">
+
+	<!-- bean定义 -->
+	<struct name="PlayerInfo" cache="true" explain="玩家信息结构体">
+		<field class="string" name="PlayerID" explain="玩家ID" />
+		<field class="int" name="x" explain="玩家坐标X" />
+		<field class="int" name="y" explain="玩家坐标Y" />
+	</struct>
+
+
+	<!-- 服务器下发消息 -->
+	<message msgId="10000" name="SynchroPlayerID" cache="true" explain="同步玩家专属ID">
+		<field class="string" name="PlayerID" explain="家专属ID" />
+	</message>
+	
+	<!-- 客户端请求消息 -->
+	<message msgId="10001" name="AskEnterRoom" cache="true" explain="请求进入房间">
+	</message>
+
+	<!-- 服务器下发消息 -->
+	<message msgId="100010" name="ResponseEnterRoom" cache="true" explain="返回进入房间信息">
+		<field class="string" name="PlayerID" explain="玩家id" />
+		<field class="string" name="RoomID" explain="房间id" />
+	</message>
+
+	<!-- 服务器下发消息 -->
+	<message msgId="10002" name="SynchroOtherPlayer" cache="true" explain="同步其他玩家">
+		<list class="PlayerInfo" name="OtherPlayer" explain="玩家信息" />
+	</message>
+	
+	<!-- 服务器下发消息 -->
+	<message msgId="10003" name="SynchroPlayerLeave" cache="true" explain="同步玩家离开房间">
+		<field class="string" name="PlayerID" explain="玩家离开" />
+	</message>
+</messages>
